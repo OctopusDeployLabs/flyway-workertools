@@ -4,6 +4,7 @@ ARG Powershell_Version=7.0.3\*
 ARG Octopus_Cli_Version=7.4.1
 ARG Dotnet_Sdk_Version=3.1.401-1
 ARG FLYWAY_VERSION=7.7.0
+ARG SNOWFLAKE_DRIVER_VERSION=3.6.23
 
 # get `wget` & software-properties-common
 # https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-7#ubuntu-1804
@@ -42,6 +43,9 @@ RUN curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLY
   && tar -xzf flyway-commandline-${FLYWAY_VERSION}.tar.gz --strip-components=1 \
   && rm flyway-commandline-${FLYWAY_VERSION}.tar.gz \
   && chmod +x /flyway/flyway \
-  && ln -s /flyway/flyway /usr/local/bin/flyway
+  && ln -s /flyway/flyway /usr/local/bin/flyway \
+  && rm drivers/snowflake-jdbc-*.jar \
+  && curl -o drivers/snowflake-jdbc-${SNOWFLAKE_DRIVER_VERSION}.jar \
+     https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/${SNOWFLAKE_DRIVER_VERSION}/snowflake-jdbc-${SNOWFLAKE_DRIVER_VERSION}.jar
 
 WORKDIR /
