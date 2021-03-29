@@ -1,7 +1,6 @@
 FROM ubuntu:18.04
 
-ARG FLYWAY_VERSION=7.7.0
-ARG SNOWFLAKE_DRIVER_VERSION=3.6.23
+ARG FLYWAY_VERSION=7.7.1
 
 # get `wget` & software-properties-common
 # https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-7#ubuntu-1804
@@ -32,11 +31,7 @@ RUN curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLY
   # Make the /flyway/flyway command an executable
   && chmod +x /flyway/flyway \
   # Make it so any user can call /flyway/flyway 
-  && ln -s /flyway/flyway /usr/local/bin/flyway \
-  # Install the snowflake driver
-  && rm drivers/snowflake-jdbc-*.jar \
-  && curl -o drivers/snowflake-jdbc-${SNOWFLAKE_DRIVER_VERSION}.jar \
-     https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/${SNOWFLAKE_DRIVER_VERSION}/snowflake-jdbc-${SNOWFLAKE_DRIVER_VERSION}.jar
+  && ln -s /flyway/flyway /usr/local/bin/flyway
 
 # Octopus expects to start in the default directory
 WORKDIR /
