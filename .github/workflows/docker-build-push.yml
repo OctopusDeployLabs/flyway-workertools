@@ -71,4 +71,10 @@ jobs:
       
     - name: Push Manifest
       run: docker manifest push octopuslabs/flyway-workertools:latest
+      
+    - name: Build Version Manifest
+      run: docker manifest create octopuslabs/flyway-workertools:$VERSION_NUMBER octopuslabs/flyway-workertools:$VERSION_NUMBER-windows.2019 octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804
+      
+    - name: Push Version Manifest
+      run: docker manifest push octopuslabs/flyway-workertools:$VERSION_NUMBER
     
