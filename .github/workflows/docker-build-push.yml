@@ -54,3 +54,18 @@ jobs:
       
     - name: Push the latest image
       run: docker push octopuslabs/flyway-workertools:latest-windows.2019
+  
+  build-docker-manifest:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Dockerhub Login
+      env:
+        USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
+      run: docker login --username $USERNAME --password "$PASSWORD"
+      
+    - name: Build Manifest
+      run: docker manifest create octopuslabs/flyway-workertools:latest octopuslabs/flyway-workertools:latest-windows.2019 octopuslabs/flyway-workertools:latest-ubuntu.1804
+    
