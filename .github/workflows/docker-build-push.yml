@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build ./ubuntu-1804 --file Dockerfile --tag octopuslabs/flyway-workertools:7.7.1-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804
+      run: docker build ./ubuntu-1804 --tag octopuslabs/flyway-workertools:7.7.1-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804
       
   build-windows:
 
@@ -24,4 +24,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build ./ubuntu-1804 --file Dockerfile --tag octopuslabs/flyway-workertools:7.7.1-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019
+      run: docker build ./windows-2019 --tag octopuslabs/flyway-workertools:7.7.1-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019
