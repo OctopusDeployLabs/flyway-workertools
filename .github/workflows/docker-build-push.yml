@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build ./ubuntu-1804 --file Dockerfile --tag octopuslabs/flyway-workertools:7.7.1-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804
+      
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build ./ubuntu-1804 --file Dockerfile --tag octopuslabs/flyway-workertools:7.7.1-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019
