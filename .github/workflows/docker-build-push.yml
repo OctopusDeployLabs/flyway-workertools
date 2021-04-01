@@ -11,8 +11,39 @@ env:
 
 jobs:
 
-  build-linux:
+  get-version-number:
 
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Compare latest flyway version with container
+      run: |
+        $manifestDataRaw = Invoke-WebRequest "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/maven-metadata.xml"
+        $manifestData = [Xml]$manifestDataRaw
+
+        $latestFlywayVersion = $manifestData.metadata.versioning.latest
+
+        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v1/repositories/octopuslabs/flyway-workertools/tags"
+        $matchingTag = $workerToolsTags | Where-Object { $_.name -eq $latestFlywayVersion }
+
+        if ($null -ne $matchingTag)
+        {
+            Write-Host "Docker container already has latest version of flyway"
+            return "stop"
+        }
+        else
+        {
+            Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"
+            echo "CURRENT_FLYWAY_VERSION=$latestFlywayVersion" >> $GITHUB_ENV
+            return "continue"
+        }
+        
+      shell: powershell
+
+  build-linux:
+    needs: [get-version-number]
     runs-on: ubuntu-latest
 
     steps:
@@ -25,16 +56,19 @@ jobs:
       run: docker login --username $USERNAME --password "$PASSWORD"
     
     - name: Build the Docker image      
-      run: docker build ./ubuntu-1804 --tag octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804
+      run: docker build ./ubuntu-1804 --tag octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804 --build-arg FLYWAY_VERSION=$VERSION_NUMBER
       
     - name: Push the version image
       run: docker push octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804
       
     - name: Push the latest image
       run: docker push octopuslabs/flyway-workertools:latest-ubuntu.1804
+
+    - name: Write Latest Version
+      run: echo $CURRENT_FLYWAY_VERSION
       
   build-windows:
-
+    needs: [get-version-number]
     runs-on: windows-latest
 
     steps:
@@ -47,13 +81,16 @@ jobs:
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
     
     - name: Build the Docker image
-      run: docker build ./windows-2019 --tag octopuslabs/flyway-workertools:${env:VERSION_NUMBER}-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019
+      run: docker build ./windows-2019 --tag octopuslabs/flyway-workertools:${env:VERSION_NUMBER}-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019 --build-arg FLYWAY_VERSION=${env:VERSION_NUMBER}
       
     - name: Push the version image
       run: docker push octopuslabs/flyway-workertools:${env:VERSION_NUMBER}-windows.2019
       
     - name: Push the latest image
       run: docker push octopuslabs/flyway-workertools:latest-windows.2019
+
+    - name: Write Latest Version
+      run: Write-Host ${env:CURRENT_FLYWAY_VERSION}
   
   build-docker-manifest:
     needs: [build-windows, build-linux]
