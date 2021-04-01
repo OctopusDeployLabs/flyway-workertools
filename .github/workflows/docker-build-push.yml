@@ -36,7 +36,7 @@ jobs:
         else
         {
             Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"
-            echo "CURRENT_FLYWAY_VERSION=$latestFlywayVersion" >> $GITHUB_ENV
+            echo "CURRENT_FLYWAY_VERSION=$latestFlywayVersion" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
             return "continue"
         }
         
