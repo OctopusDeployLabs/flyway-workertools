@@ -55,17 +55,19 @@ jobs:
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username $USERNAME --password "$PASSWORD"
     
-    - name: Build the Docker image      
-      run: docker build ./ubuntu-1804 --tag octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804 --build-arg FLYWAY_VERSION=$VERSION_NUMBER
+    #- name: Build the Docker image      
+    #  run: docker build ./ubuntu-1804 --tag octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804 --build-arg FLYWAY_VERSION=$VERSION_NUMBER
       
-    - name: Push the version image
-      run: docker push octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804
+    #- name: Push the version image
+    #  run: docker push octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804
       
-    - name: Push the latest image
-      run: docker push octopuslabs/flyway-workertools:latest-ubuntu.1804
+    #- name: Push the latest image
+    #  run: docker push octopuslabs/flyway-workertools:latest-ubuntu.1804
 
     - name: Write Latest Version
-      run: echo $CURRENT_FLYWAY_VERSION
+      env:
+        FLYWAY_VERSION_TO_BUILD: $VERSION_NUMBER
+      run: echo $FLYWAY_VERSION_TO_BUILD
       
   build-windows:
     needs: [get-version-number]
@@ -80,17 +82,19 @@ jobs:
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
     
-    - name: Build the Docker image
-      run: docker build ./windows-2019 --tag octopuslabs/flyway-workertools:${env:VERSION_NUMBER}-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019 --build-arg FLYWAY_VERSION=${env:VERSION_NUMBER}
+    #- name: Build the Docker image
+    #  run: docker build ./windows-2019 --tag octopuslabs/flyway-workertools:${env:VERSION_NUMBER}-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019 --build-arg FLYWAY_VERSION=${env:VERSION_NUMBER}
       
-    - name: Push the version image
-      run: docker push octopuslabs/flyway-workertools:${env:VERSION_NUMBER}-windows.2019
+    #- name: Push the version image
+    #  run: docker push octopuslabs/flyway-workertools:${env:VERSION_NUMBER}-windows.2019
       
-    - name: Push the latest image
-      run: docker push octopuslabs/flyway-workertools:latest-windows.2019
+    #- name: Push the latest image
+    #  run: docker push octopuslabs/flyway-workertools:latest-windows.2019
 
     - name: Write Latest Version
-      run: Write-Host ${env:CURRENT_FLYWAY_VERSION}
+      env:
+        FLYWAY_VERSION_TO_BUILD: $VERSION_NUMBER
+      run: Write-Host ${env:FLYWAY_VERSION_TO_BUILD}
   
   build-docker-manifest:
     needs: [build-windows, build-linux]
@@ -106,12 +110,12 @@ jobs:
     - name: Build Manifest
       run: docker manifest create octopuslabs/flyway-workertools:latest octopuslabs/flyway-workertools:latest-windows.2019 octopuslabs/flyway-workertools:latest-ubuntu.1804
       
-    - name: Push Manifest
-      run: docker manifest push octopuslabs/flyway-workertools:latest
+    # - name: Push Manifest
+    #  run: docker manifest push octopuslabs/flyway-workertools:latest
       
     - name: Build Version Manifest
       run: docker manifest create octopuslabs/flyway-workertools:$VERSION_NUMBER octopuslabs/flyway-workertools:$VERSION_NUMBER-windows.2019 octopuslabs/flyway-workertools:$VERSION_NUMBER-ubuntu.1804
       
-    - name: Push Version Manifest
-      run: docker manifest push octopuslabs/flyway-workertools:$VERSION_NUMBER
+    #- name: Push Version Manifest
+    #  run: docker manifest push octopuslabs/flyway-workertools:$VERSION_NUMBER
     
