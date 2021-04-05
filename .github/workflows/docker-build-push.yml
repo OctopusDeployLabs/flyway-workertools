@@ -3,8 +3,8 @@ name: Docker Image CI
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]    
+  schedule:
+    - cron: '0 5 * * *'
 
 jobs:
 
@@ -37,8 +37,7 @@ jobs:
         {
             Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"            
             echo "::set-output name=Continue::Yes"
-        }
-        
+        }      
       shell: powershell
 
   build-linux:
@@ -53,19 +52,23 @@ jobs:
         USERNAME: ${{ secrets.DOCKER_HUB_USER }}
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username $USERNAME --password "$PASSWORD"
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     
     - name: Build the Docker image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker build ./ubuntu-1804 --tag octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.1804 --tag octopuslabs/flyway-workertools:latest-ubuntu.1804 --build-arg FLYWAY_VERSION=$FLYWAY_VERSION_TO_BUILD
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the version image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker push octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.1804
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the latest image
       run: docker push octopuslabs/flyway-workertools:latest-ubuntu.1804
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
   build-windows:
     needs: [get-version-number]
@@ -79,19 +82,23 @@ jobs:
         USERNAME: ${{ secrets.DOCKER_HUB_USER }}
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     
     - name: Build the Docker image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker build ./windows-2019 --tag octopuslabs/flyway-workertools:${env:FLYWAY_VERSION_TO_BUILD}-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019 --build-arg FLYWAY_VERSION=${env:FLYWAY_VERSION_TO_BUILD}
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the version image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker push octopuslabs/flyway-workertools:${env:FLYWAY_VERSION_TO_BUILD}-windows.2019
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push the latest image
-      run: docker push octopuslabs/flyway-workertools:latest-windows.2019    
+      run: docker push octopuslabs/flyway-workertools:latest-windows.2019
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
   
   build-docker-manifest:
     needs: [build-windows, build-linux, get-version-number]
@@ -103,20 +110,25 @@ jobs:
         USERNAME: ${{ secrets.DOCKER_HUB_USER }}
         PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
       run: docker login --username $USERNAME --password "$PASSWORD"
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Build Manifest
       run: docker manifest create octopuslabs/flyway-workertools:latest octopuslabs/flyway-workertools:latest-windows.2019 octopuslabs/flyway-workertools:latest-ubuntu.1804
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push Manifest
       run: docker manifest push octopuslabs/flyway-workertools:latest
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Build Version Manifest      
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}      
       run: docker manifest create octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-windows.2019 octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.1804
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push Version Manifest
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker manifest push octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD
-    
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+  
