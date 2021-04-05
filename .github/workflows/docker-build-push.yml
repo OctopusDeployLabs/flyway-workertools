@@ -17,11 +17,10 @@ jobs:
     outputs:
       FLYWAY_VERSION: ${{ steps.step1.outputs.CURRENT_FLYWAY_VERSION }}
       CONTINUE: ${{ steps.step1.outputs.Continue }}
-    steps:
-    - id: step1
+    steps:    
     - uses: actions/checkout@v2
-
-    - name: Compare latest flyway version with container
+    - id: step1
+      name: Compare latest flyway version with container
       run: |
         $manifestDataRaw = Invoke-WebRequest "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/maven-metadata.xml"
         $manifestData = [Xml]$manifestDataRaw
