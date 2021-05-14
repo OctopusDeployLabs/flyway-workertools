@@ -1,4 +1,4 @@
-FROM octopuslabs/workertools:latest-ubuntu.1804
+FROM octopuslabs/workertools:latest-ubuntu.2004
 
 ARG FLYWAY_VERSION=7.7.1
 
