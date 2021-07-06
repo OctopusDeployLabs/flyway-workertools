@@ -4,7 +4,7 @@ ARG FLYWAY_VERSION=7.7.1
 
 # Get JRE
 # https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-18-04
-RUN apt-get install -y openjdk-14-jre-headless
+RUN apt-get update && apt-get install -y openjdk-11-jre-headless
 
 # Change the workdir to flyway to install flyway binaries
 WORKDIR /flyway
