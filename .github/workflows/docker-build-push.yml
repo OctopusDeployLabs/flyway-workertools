@@ -24,8 +24,8 @@ jobs:
 
         $latestFlywayVersion = $manifestData.metadata.versioning.latest
 
-        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v1/repositories/octopuslabs/flyway-workertools/tags"
-        $matchingTag = $workerToolsTags | Where-Object { $_.name -eq $latestFlywayVersion }
+        $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/octopuslabs/flyway-workertools/tags?page_size=50"
+        $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $latestFlywayVersion }
 
         echo "::set-output name=CURRENT_FLYWAY_VERSION::$latestFlywayVersion"
 
