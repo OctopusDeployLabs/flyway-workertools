@@ -6,7 +6,7 @@ SHELL ["powershell", "-Command"]
 ARG FLYWAY_VERSION=7.7.1
 
 # # Install Flyway
-RUN Invoke-WebRequest "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${env:FLYWAY_VERSION}/flyway-commandline-${env:FLYWAY_VERSION}-windows-x64.zip" -OutFile flyway-cli.zip; `
+RUN Invoke-WebRequest "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/${env:FLYWAY_VERSION}/flyway-commandline-${env:FLYWAY_VERSION}-windows-x64.zip" -OutFile flyway-cli.zip; `
     & '.\Program Files\7-Zip\7z.exe' x .\flyway-cli.zip; `
     rm .\flyway-cli.zip;
    

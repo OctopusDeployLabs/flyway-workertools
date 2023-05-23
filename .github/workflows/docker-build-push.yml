@@ -19,10 +19,10 @@ jobs:
     - id: step1
       name: Compare latest flyway version with container
       run: |
-        $manifestDataRaw = Invoke-WebRequest "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/maven-metadata.xml"
+        $manifestDataRaw = Invoke-WebRequest "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/maven-metadata.xml"
         $manifestData = [Xml]$manifestDataRaw
 
-        $latestFlywayVersion = $manifestData.metadata.versioning.latest
+        $latestFlywayVersion = $manifestData.metadata.versioning.release
 
         $workerToolsTags = Invoke-RestMethod "https://registry.hub.docker.com/v2/repositories/octopuslabs/flyway-workertools/tags?page_size=50"
         $matchingTag = $workerToolsTags.results | Where-Object { $_.name -eq $latestFlywayVersion }
