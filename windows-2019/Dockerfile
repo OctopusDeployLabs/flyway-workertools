@@ -16,4 +16,5 @@ RUN $old = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentC
     $new = $old + $flywayPath; `
     Write-Host $new; `
     Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name path -Value $new; `
+    Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1; `
     refreshenv
