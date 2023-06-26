@@ -5,6 +5,9 @@ SHELL ["powershell", "-Command"]
 
 ARG FLYWAY_VERSION=7.7.1
 
+# Get SQL Fluff for Flyway Check Command
+RUN pip3 install sqlfluff==1.2.1
+
 # # Install Flyway
 RUN Invoke-WebRequest "https://download.red-gate.com/maven/release/org/flywaydb/enterprise/flyway-commandline/${env:FLYWAY_VERSION}/flyway-commandline-${env:FLYWAY_VERSION}-windows-x64.zip" -OutFile flyway-cli.zip; `
     & '.\Program Files\7-Zip\7z.exe' x .\flyway-cli.zip; `

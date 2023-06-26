@@ -6,6 +6,9 @@ ARG FLYWAY_VERSION=7.7.1
 # https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-18-04
 RUN apt-get update && apt-get install -y openjdk-11-jre-headless
 
+# Get SQL Fluff for Flyway Check Command
+RUN pip3 install sqlfluff==1.2.1
+
 # Change the workdir to flyway to install flyway binaries
 WORKDIR /flyway
 
