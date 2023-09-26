@@ -178,7 +178,7 @@ jobs:
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Create docker manifest for latest tag
-      run: docker manifest create octopuslabs/flyway-workertools:latest octopuslabs/flyway-workertools:latest-windows.2019 octopuslabs/flyway-workertools:latest-ubuntu.2204
+      run: docker manifest create octopuslabs/flyway-workertools:latest octopuslabs/flyway-workertools:latest-windows.2019 octopuslabs/flyway-workertools:latest-windows.2022 octopuslabs/flyway-workertools:latest-ubuntu.2204
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
 
     - name: Annotate docker manifest for latest tag
