@@ -206,8 +206,8 @@ jobs:
         WIN2019_VERSION: ${{ needs.get-version-number.outputs.WIN2019_VERSION }}
         WIN2022_VERSION: ${{ needs.get-version-number.outputs.WIN2022_VERSION }}
       run: |
-        docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:$VERSION_NUMBER" "octopuslabs/flyway-workertools:$VERSION_NUMBER-windows.2019" && \
-        docker manifest annotate --os "windows" --os-version "$WIN2022_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:$VERSION_NUMBER" "octopuslabs/flyway-workertools:$VERSION_NUMBER-windows.2022"
+        docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD" "octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-windows.2019" && \
+        docker manifest annotate --os "windows" --os-version "$WIN2022_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD" "octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-windows.2022"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
     - name: Push docker manifest for version-specific tag
