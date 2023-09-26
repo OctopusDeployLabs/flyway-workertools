@@ -202,7 +202,7 @@ jobs:
 
     - name: Annotate docker manifest for version-specific tag
       env:
-        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
+        FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}      
         WIN2019_VERSION: ${{ needs.get-version-number.outputs.WIN2019_VERSION }}
         WIN2022_VERSION: ${{ needs.get-version-number.outputs.WIN2022_VERSION }}
       run: |
