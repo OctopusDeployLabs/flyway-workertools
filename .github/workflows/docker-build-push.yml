@@ -14,6 +14,8 @@ jobs:
     outputs:
       FLYWAY_VERSION: ${{ steps.step1.outputs.CURRENT_FLYWAY_VERSION }}
       CONTINUE: ${{ steps.step1.outputs.Continue }}
+      WIN2019_VERSION: ${{ steps.step1.outputs.WIN2019_VERSION }}
+      WIN2022_VERSION: ${{ steps.step1.outputs.WIN2022_VERSION }}
     steps:    
     - uses: actions/checkout@v3
     - id: step1
@@ -38,7 +40,23 @@ jobs:
         {
             Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"            
             echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
-        }      
+        }
+
+        Write-Host "Getting OS versions for windows 2022 and 2019"
+        $win2019_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2019" | ConvertFrom-Json)
+        $WIN2019_VERSION = $win2019_manifest.Descriptor.Platform.'os.version'
+        Write-Host "WIN2019_VERSION: $WIN2019_VERSION"
+
+        $win2022_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2022" | ConvertFrom-Json)
+        $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
+        Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
+
+        if([string]::IsNullOrWhiteSpace($WIN2019_VERSION) -or [string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
+          throw "Could not establish OS versions for windows 2022 and 2019 needed for docker manifest"
+        }
+
+        echo "WIN2019_VERSION=$WIN2019_VERSION" >> $env:GITHUB_OUTPUT
+        echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
       shell: powershell
 
   build-ubuntu:
@@ -55,35 +73,35 @@ jobs:
       run: docker login --username $USERNAME --password "$PASSWORD"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     
-    - name: Build the ubuntu-20.04 Docker image
+    - name: Build the ubuntu.2004 image 
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker build ./ubuntu-2004 --tag octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.2004 --tag octopuslabs/flyway-workertools:latest-ubuntu.2004 --build-arg FLYWAY_VERSION=$FLYWAY_VERSION_TO_BUILD
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the ubuntu-20.04 version image
+    - name: Push the ubuntu.2004 version-specific image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker push octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.2004
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the latest ubuntu-20.04 image
+    - name: Push the ubuntu.2004 latest image
       run: docker push octopuslabs/flyway-workertools:latest-ubuntu.2004
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
-    
-    - name: Build the ubuntu-22.04 Docker image
+
+    - name: Build the ubuntu.2204 image      
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker build ./ubuntu-2204 --tag octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.2204 --tag octopuslabs/flyway-workertools:latest-ubuntu.2204 --build-arg FLYWAY_VERSION=$FLYWAY_VERSION_TO_BUILD
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the ubuntu-22.04 version image
+    - name: Push the ubuntu.2204 version-specific image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker push octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.2204
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the latest ubuntu-22.04 image
+    - name: Push the ubuntu.2204 latest image
       run: docker push octopuslabs/flyway-workertools:latest-ubuntu.2204
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
@@ -101,24 +119,54 @@ jobs:
       run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
     
-    - name: Build the win2019 Docker image
+    - name: Build the win2019 image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker build ./windows-2019 --tag octopuslabs/flyway-workertools:${env:FLYWAY_VERSION_TO_BUILD}-windows.2019 --tag octopuslabs/flyway-workertools:latest-windows.2019 --build-arg FLYWAY_VERSION=${env:FLYWAY_VERSION_TO_BUILD}
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the win2019 version image
+    - name: Push the win2019 version-specific image
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker push octopuslabs/flyway-workertools:${env:FLYWAY_VERSION_TO_BUILD}-windows.2019
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push the latest win2019 image
+    - name: Push the win2019 latest image
       run: docker push octopuslabs/flyway-workertools:latest-windows.2019
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+
+  build-win-2022:
+    needs: [get-version-number]
+    runs-on: windows-2022
+
+    steps:
+    - uses: actions/checkout@v3
+        
+    - name: DockerHub Login
+      env:
+        USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        PASSWORD: ${{ secrets.DOCKER_HUB_PAT }}
+      run: docker login --username ${env:USERNAME} --password "${env:PASSWORD}"
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+    
+    - name: Build the win2022 image
+      env:
+        FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
+      run: docker build ./windows-2022 --tag octopuslabs/flyway-workertools:${env:FLYWAY_VERSION_TO_BUILD}-windows.2022 --tag octopuslabs/flyway-workertools:latest-windows.2022 --build-arg FLYWAY_VERSION=${env:FLYWAY_VERSION_TO_BUILD}
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+      
+    - name: Push the win2022 version-specific image
+      env:
+        FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
+      run: docker push octopuslabs/flyway-workertools:${env:FLYWAY_VERSION_TO_BUILD}-windows.2022
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+      
+    - name: Push the win2022 latest image
+      run: docker push octopuslabs/flyway-workertools:latest-windows.2022
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
   
   build-docker-manifest:
-    needs: [get-version-number, build-ubuntu, build-win-2019]
+    needs: [get-version-number, build-ubuntu, build-win-2019, build-win-2022]
     runs-on: ubuntu-latest
     
     steps:
@@ -129,21 +177,40 @@ jobs:
       run: docker login --username $USERNAME --password "$PASSWORD"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Build Manifest
-      run: docker manifest create octopuslabs/flyway-workertools:latest octopuslabs/flyway-workertools:latest-windows.2019 octopuslabs/flyway-workertools:latest-ubuntu.2004
+    - name: Create docker manifest for latest tag
+      run: docker manifest create octopuslabs/flyway-workertools:latest octopuslabs/flyway-workertools:latest-windows.2019 octopuslabs/flyway-workertools:latest-windows.2022 octopuslabs/flyway-workertools:latest-ubuntu.2204
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+
+    - name: Annotate docker manifest for latest tag
+      env:
+        WIN2019_VERSION: ${{ needs.get-version-number.outputs.WIN2019_VERSION }}
+        WIN2022_VERSION: ${{ needs.get-version-number.outputs.WIN2022_VERSION }}
+      run: |
+       docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:latest" "octopuslabs/flyway-workertools:latest-windows.2019" && \
+       docker manifest annotate --os "windows" --os-version "$WIN2022_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:latest" "octopuslabs/flyway-workertools:latest-windows.2022"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push Manifest
+    - name: Push docker manifest for latest tag
       run: docker manifest push octopuslabs/flyway-workertools:latest
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Build Version Manifest      
+    - name: Create docker manifest for version-specific tag
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}      
-      run: docker manifest create octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-windows.2019 octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.2004
+      run: docker manifest create octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-windows.2019 octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-windows.2022 octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD-ubuntu.2204
+      if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
+
+    - name: Annotate docker manifest for version-specific tag
+      env:
+        VERSION_NUMBER: ${{ needs.get-version-number.outputs.VERSION }}  
+        WIN2019_VERSION: ${{ needs.get-version-number.outputs.WIN2019_VERSION }}
+        WIN2022_VERSION: ${{ needs.get-version-number.outputs.WIN2022_VERSION }}
+      run: |
+        docker manifest annotate --os "windows" --os-version "$WIN2019_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:$VERSION_NUMBER" "octopuslabs/flyway-workertools:$VERSION_NUMBER-windows.2019" && \
+        docker manifest annotate --os "windows" --os-version "$WIN2022_VERSION" --arch "amd64" "octopuslabs/flyway-workertools:$VERSION_NUMBER" "octopuslabs/flyway-workertools:$VERSION_NUMBER-windows.2022"
       if: ${{ needs.get-version-number.outputs.CONTINUE == 'Yes' }}
       
-    - name: Push Version Manifest
+    - name: Push docker manifest for version-specific tag
       env:
         FLYWAY_VERSION_TO_BUILD: ${{ needs.get-version-number.outputs.FLYWAY_VERSION }}
       run: docker manifest push octopuslabs/flyway-workertools:$FLYWAY_VERSION_TO_BUILD
