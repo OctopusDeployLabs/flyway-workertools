@@ -39,24 +39,26 @@ jobs:
         else
         {
             Write-Host "We need to upgrade the flyway container to $latestFlywayVersion"            
+
+            Write-Host "Getting OS versions for windows 2022 and 2019"
+            $win2019_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2019" | ConvertFrom-Json)
+            $WIN2019_VERSION = $win2019_manifest.Descriptor.Platform.'os.version'
+            Write-Host "WIN2019_VERSION: $WIN2019_VERSION"
+
+            $win2022_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2022" | ConvertFrom-Json)
+            $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
+            Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
+
+            if([string]::IsNullOrWhiteSpace($WIN2019_VERSION) -or [string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
+              throw "Could not establish OS versions for windows 2022 and 2019 needed for docker manifest"
+            }
+
+            echo "WIN2019_VERSION=$WIN2019_VERSION" >> $env:GITHUB_OUTPUT
+            echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
+
+            Write-Host "We have everything we need, continuing."
             echo "CONTINUE=Yes" >> $env:GITHUB_OUTPUT
         }
-
-        Write-Host "Getting OS versions for windows 2022 and 2019"
-        $win2019_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2019" | ConvertFrom-Json)
-        $WIN2019_VERSION = $win2019_manifest.Descriptor.Platform.'os.version'
-        Write-Host "WIN2019_VERSION: $WIN2019_VERSION"
-
-        $win2022_manifest = (docker manifest inspect --verbose "octopuslabs/workertools:latest-windows.2022" | ConvertFrom-Json)
-        $WIN2022_VERSION = $win2022_manifest.Descriptor.Platform.'os.version'
-        Write-Host "WIN2022_VERSION: $WIN2022_VERSION"
-
-        if([string]::IsNullOrWhiteSpace($WIN2019_VERSION) -or [string]::IsNullOrWhiteSpace($WIN2022_VERSION)) {
-          throw "Could not establish OS versions for windows 2022 and 2019 needed for docker manifest"
-        }
-
-        echo "WIN2019_VERSION=$WIN2019_VERSION" >> $env:GITHUB_OUTPUT
-        echo "WIN2022_VERSION=$WIN2022_VERSION" >> $env:GITHUB_OUTPUT
       shell: powershell
 
   build-ubuntu:
