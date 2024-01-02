@@ -9,6 +9,14 @@ RUN apt-get update && apt-get install -y openjdk-17-jre-headless
 # Get SQL Fluff for Flyway Check Command
 RUN pip3 install sqlfluff==1.2.1
 
+# Install AWS CLI to support IAM role authentication
+RUN apt-get update && apt-get install unzip \
+  && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+  && unzip awscliv2.zip \
+  && rm awscliv2.zip \
+  && ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update 
+
+
 # Change the workdir to flyway to install flyway binaries
 WORKDIR /flyway
 
